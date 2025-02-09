@@ -2,9 +2,10 @@ import Image from "next/image";
 import ButtonLogin from "@/components/ButtonLogin";
 import FAQListItem from "@/components/FAQListItem";
 import productDemo from "@/app/Work_from_home-removebg-preview.png";
+import { auth } from "@/auth";
 
 
-export default function Home() {
+export default async function Home() {
   const isLoggedIn = true;
   const pricingFeaturesList = [
     "Evidencija ostvarenih prihoda",
@@ -14,6 +15,8 @@ export default function Home() {
 
 
   ];
+
+  const session = await auth()
 
 
   return (
@@ -28,7 +31,7 @@ export default function Home() {
         </div>
 
         <div>
-          <ButtonLogin isLoggedIn = {isLoggedIn}/>
+          <ButtonLogin session = {session} />
         </div>
 
       </div>
@@ -47,7 +50,7 @@ export default function Home() {
       <div className="opacity-90 mb-10">
         Evidencija frilens prihoda, praćenje i optimizacija poreskih obaveza
       </div>
-      <ButtonLogin isLoggedIn = {isLoggedIn}/>
+      <ButtonLogin session = {session}/>
       </div>
       <Image src={productDemo} alt="Product demo" className="w-96 rounded-xl"/>
       </section>
@@ -83,7 +86,7 @@ export default function Home() {
 
           </ul>
 
-          <ButtonLogin isLoggedIn ={isLoggedIn} extraStyle="w-full"></ButtonLogin>
+          <ButtonLogin session = {session} extraStyle="w-full"></ButtonLogin>
 
         </div>
         </div>
