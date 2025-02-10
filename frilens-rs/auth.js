@@ -33,6 +33,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("No user found with this email.");
         }
 
+        // Check if the user signed up with Google and is trying to use a password
+        if (!user.password) {
+          console.error("❌ User signed up with Google, cannot use password login.");
+          throw new Error("This email is linked to Google login. Please sign in with Google.");
+        }
+
         // Verify password
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
@@ -56,9 +62,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
 
-  callbacks: {
-    authorized: async ({ auth }) => {
-      return !!auth;
+callbacks: {
+    async signIn({ account, profile }) {
+      const client = await clientPromise;
+      const db = client.db();
+      const usersCollection = db.collection("users");
+
+      if (account.provider === "google") {
+        // Check if user exists in DB
+        let user = await usersCollection.findOne({ email: profile.email });
+
+        if (!user) {
+          console.log("✅ Creating new Google user:", profile.email);
+          // Create a new user if doesn't exist
+          user = await usersCollection.insertOne({
+            name: profile.name,
+            email: profile.email,
+            image: profile.picture,
+            emailVerified: new Date(),
+          });
+        }
+      }
+      return true;
     },
   },
 });
