@@ -8,12 +8,30 @@ export async function POST(req) {
     try {
         // ✅ Parse JSON request body
         const body = await req.json();
-        const { amountPaid, quarter, year } = body;
+        const { amount, currency, company, date } = body;
 
-        // ✅ Validate input fields
-        if (!amountPaid || !quarter || !year) {
+        // ✅ Validate required fields
+        if (!amount || !currency || !company || !date) {
             return NextResponse.json(
-                { error: "All fields (amountPaid, quarter, year) are required." },
+                { error: "All fields (amount, currency, company, date) are required." },
+                { status: 400 }
+            );
+        }
+
+        // ✅ Validate currency
+        const allowedCurrencies = ["USD", "EUR", "RSD"];
+        if (!allowedCurrencies.includes(currency)) {
+            return NextResponse.json(
+                { error: "Invalid currency. Allowed values: USD, EUR, RSD." },
+                { status: 400 }
+            );
+        }
+
+        // ✅ Validate date format
+        const paymentDate = new Date(date);
+        if (isNaN(paymentDate.getTime())) {
+            return NextResponse.json(
+                { error: "Invalid date format." },
                 { status: 400 }
             );
         }
@@ -43,14 +61,14 @@ export async function POST(req) {
         // ✅ Store the payment
         const payment = await Payment.create({
             userId: user._id,
-            amountPaid,
-            quarter,
-            year
+            amount,
+            currency,
+            company,
+            date: paymentDate
         });
 
-        // ✅ Update the user's payments array & total income
+        // ✅ Update the user's payments array
         user.payments.push(payment._id);
-        user.totalIncome += amountPaid;
         await user.save();
 
         return NextResponse.json(
