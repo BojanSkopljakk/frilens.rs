@@ -4,19 +4,35 @@ import PaymentForm from "@/components/PaymentForm";
 import { auth } from "@/auth";
 import connectMongo from "@/libs/mongoose";
 import User from "@/models/User";
+import Payment from "@/models/Payment"; 
 
 
 async function getUser() {
-	const session = await auth();
+    const session = await auth();
 
-	await connectMongo();
+    if (!session || !session.user || !session.user.email) {
+        console.log("No valid session found.");
+        return null;
+    }
 
-	return await User.findById(session.user.id).populate("payments");
+    await connectMongo();
+
+    const user = await User.findOne({ email: session.user.email }).populate("payments");
+
+    if (!user) {
+        console.log("User not found in the database.");
+    } else {
+        console.log("Fetched user:", user);
+    }
+
+    return user;
 }
 
 
 export default async function Dashboard(){
     const user = await getUser();
+    console.log(user);
+    
     
     return (
         <main className="bg-base-200 min-h-screen">
@@ -34,7 +50,7 @@ export default async function Dashboard(){
 
                    <div>
                         <h1 className="font-extrabold text-xl">
-                            Uplate
+                        {user.payments.length} Uplate
                         </h1>
                    </div>
                   
