@@ -5,26 +5,36 @@ import { auth } from "@/auth";
 import connectMongo from "@/libs/mongoose";
 import User from "@/models/User";
 import Payment from "@/models/Payment";
+import TaxCalculator from "@/components/TaxCalculator";
 
 async function getUser() {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.email) {
+  if (!session || !session.user?.email) {
     console.log("No valid session found.");
     return null;
   }
 
   await connectMongo();
 
-  const user = await User.findOne({ email: session.user.email }).populate(
-    "payments"
-  );
+  const user = await User.findOne({ email: session.user.email })
+    .populate("payments")
+    .lean(); // ✅ Converts MongoDB documents to plain objects
 
   if (!user) {
     console.log("User not found in the database.");
-  } else {
-    console.log("Fetched user:", user);
+    return null;
   }
+
+  // ✅ Convert `_id` fields to strings
+  user._id = user._id.toString();
+  user.payments = user.payments.map((payment) => ({
+    ...payment,
+    _id: payment._id.toString(), // ✅ Convert `ObjectId` to string
+    userId: payment.userId.toString(), // ✅ Convert `userId` to string
+    date: payment.date.toISOString(), // ✅ Convert Date to a string
+    createdAt: payment.createdAt.toISOString(), // ✅ Convert Date to a string
+  }));
 
   return user;
 }
@@ -82,6 +92,10 @@ export default async function Dashboard() {
             </table>
           </div>
         </div>
+      </section>
+      {/* TAX CALCULATOR */}
+      <section className="max-w-5xl mx-auto px-5 py-12 space-y-12">
+        <TaxCalculator payments={user.payments} />
       </section>
     </main>
   );
