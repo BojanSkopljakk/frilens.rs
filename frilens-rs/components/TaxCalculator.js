@@ -1,23 +1,22 @@
-"use client"; // ✅ Make sure this is included at the top
+"use client";
 
 import { useState, useEffect } from "react";
 
 export default function TaxCalculator({ payments }) {
-  // ✅ Use default export
   const [year, setYear] = useState(new Date().getFullYear());
   const [quarter, setQuarter] = useState(1);
   const [exchangeRates, setExchangeRates] = useState(null);
   const [totalIncomeRSD, setTotalIncomeRSD] = useState(0);
-  const [taxOption1, setTaxOption1] = useState(0);
-  const [taxOption2, setTaxOption2] = useState(0);
+  const [modelAResult, setModelAResult] = useState(null);
+  const [modelBResult, setModelBResult] = useState(null);
+  const [hasHealthInsurance, setHasHealthInsurance] = useState(false);
 
-  // Fetch exchange rates
   useEffect(() => {
     async function fetchRates() {
       try {
         const response = await fetch("/api/exchange-rates");
         const data = await response.json();
-        console.log("💰 Exchange Rates Fetched:", data); // ✅ Debug API response
+        console.log("💰 Exchange Rates Fetched:", data);
         setExchangeRates(data);
       } catch (error) {
         console.error("❌ Failed to fetch exchange rates:", error);
@@ -35,6 +34,72 @@ export default function TaxCalculator({ payments }) {
     });
   }
 
+  function calculateModelA(totalIncome) {
+    const NON_TAXABLE_AMOUNT = 96000; // 96,000 RSD per quarter
+    const MIN_HEALTH_INSURANCE = 4789; // Minimum health insurance per quarter
+
+    // ✅ Step 1: Calculate Taxable Base
+    const taxableIncome = Math.max(totalIncome - NON_TAXABLE_AMOUNT, 0);
+
+    // ✅ Step 2: Calculate Taxes
+    const incomeTax = taxableIncome * 0.2; // 20% tax rate
+    const pioContribution = taxableIncome * 0.24; // 24% pension contribution
+
+    // ✅ Step 3: Health Insurance Calculation
+    let healthInsurance = 0;
+    if (!hasHealthInsurance) {
+      healthInsurance = Math.max(taxableIncome * 0.103, MIN_HEALTH_INSURANCE);
+    }
+
+    // ✅ Step 4: Total Taxes and Contributions
+    const totalTax = incomeTax + pioContribution + healthInsurance;
+
+    return {
+      model: "A",
+      totalIncome,
+      taxableIncome: Math.round(taxableIncome),
+      incomeTax: Math.round(incomeTax),
+      pioContribution: Math.round(pioContribution),
+      healthInsurance: Math.round(healthInsurance),
+      totalTax: Math.round(totalTax),
+    };
+  }
+
+  function calculateModelB(totalIncome) {
+    const NON_TAXABLE_AMOUNT = 57900; // 57,900 RSD per quarter
+    const PIO_MINIMUM = 25218; // Minimum PIO per quarter
+    const MIN_HEALTH_INSURANCE = 4789; // Minimum health insurance per quarter
+
+    // ✅ Step 1: Calculate Taxable Income
+    const taxableIncome =
+      totalIncome - (NON_TAXABLE_AMOUNT + totalIncome * 0.34);
+
+    // ✅ Step 2: Income Tax (10% of taxable income)
+    const incomeTax = taxableIncome * 0.1;
+
+    // ✅ Step 3: PIO Contribution (Minimum 25,218 RSD or 24% of taxable income)
+    const pioContribution = Math.max(taxableIncome * 0.24, PIO_MINIMUM);
+
+    // ✅ Step 4: Health Insurance Calculation
+    let healthInsurance = 0;
+    if (!hasHealthInsurance) {
+      healthInsurance = Math.max(taxableIncome * 0.103, MIN_HEALTH_INSURANCE);
+    }
+
+    // ✅ Step 5: Total Taxes and Contributions
+    const totalTax = incomeTax + pioContribution + healthInsurance;
+
+    return {
+      model: "B",
+      totalIncome,
+      taxableIncome: Math.round(taxableIncome),
+      incomeTax: Math.round(incomeTax),
+      pioContribution: Math.round(pioContribution),
+      healthInsurance: Math.round(healthInsurance),
+      totalTax: Math.round(totalTax),
+    };
+  }
+
   function calculateTaxes() {
     if (!exchangeRates) {
       console.error("❌ Exchange rates not loaded yet.");
@@ -44,7 +109,6 @@ export default function TaxCalculator({ payments }) {
     const filteredPayments = filterPayments();
     let totalRSD = 0;
 
-    // ✅ Get the RSD exchange rate
     const rsdRate = exchangeRates["RSD"];
     if (!rsdRate) {
       console.error("❌ Missing exchange rate for RSD");
@@ -52,30 +116,25 @@ export default function TaxCalculator({ payments }) {
     }
 
     filteredPayments.forEach((payment) => {
-      const currencyRate = exchangeRates[payment.currency]; // ✅ Get rate to USD
+      const currencyRate = exchangeRates[payment.currency];
 
       if (!currencyRate) {
         console.warn(`⚠️ No exchange rate found for ${payment.currency}`);
         return;
       }
 
-      // ✅ Convert amount to USD, then to RSD
       const amountInRSD = (payment.amount / currencyRate) * rsdRate;
-
       console.log(
         `💱 Converting ${payment.amount} ${payment.currency} to RSD: ${amountInRSD}`
       );
-
       totalRSD += amountInRSD;
     });
 
     console.log("✅ Total Converted RSD:", totalRSD);
-
     setTotalIncomeRSD(totalRSD);
 
-    // ✅ Example Tax Formula (Replace with actual logic)
-    setTaxOption1(totalRSD * 0.1); // 10% Tax
-    setTaxOption2(totalRSD * 0.15); // 15% Tax
+    setModelAResult(calculateModelA(totalRSD));
+    setModelBResult(calculateModelB(totalRSD));
   }
 
   return (
@@ -111,6 +170,17 @@ export default function TaxCalculator({ payments }) {
         </select>
       </label>
 
+      {/* ✅ Checkbox for Health Insurance */}
+      <label className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          className="checkbox"
+          checked={hasHealthInsurance}
+          onChange={() => setHasHealthInsurance(!hasHealthInsurance)}
+        />
+        <span className="label-text">I already have health insurance</span>
+      </label>
+
       <button className="btn btn-primary w-full" onClick={calculateTaxes}>
         Calculate Taxes
       </button>
@@ -118,10 +188,58 @@ export default function TaxCalculator({ payments }) {
       {totalIncomeRSD > 0 && (
         <div className="mt-4">
           <p className="text-lg font-bold">
-            Total Income (RSD): {totalIncomeRSD.toLocaleString()}
+            💰 Total Income (RSD): {totalIncomeRSD.toLocaleString()}
           </p>
-          <p>💸 Tax Option 1 (10%): {taxOption1.toLocaleString()} RSD</p>
-          <p>💸 Tax Option 2 (15%): {taxOption2.toLocaleString()} RSD</p>
+
+          {modelAResult && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+              <h3 className="font-bold text-md">📌 Model A</h3>
+              <p>
+                💸 Taxable Income: {modelAResult.taxableIncome.toLocaleString()}{" "}
+                RSD
+              </p>
+              <p>
+                🧾 Income Tax (20%): {modelAResult.incomeTax.toLocaleString()}{" "}
+                RSD
+              </p>
+              <p>
+                🏦 PIO Contribution (24%):{" "}
+                {modelAResult.pioContribution.toLocaleString()} RSD
+              </p>
+              <p>
+                🩺 Health Insurance:{" "}
+                {modelAResult.healthInsurance.toLocaleString()} RSD
+              </p>
+              <p className="font-bold">
+                💵 Total Tax: {modelAResult.totalTax.toLocaleString()} RSD
+              </p>
+            </div>
+          )}
+
+          {modelBResult && (
+            <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+              <h3 className="font-bold text-md">📌 Model B</h3>
+              <p>
+                💸 Taxable Income: {modelBResult.taxableIncome.toLocaleString()}{" "}
+                RSD
+              </p>
+              <p>
+                🧾 Income Tax (10%): {modelBResult.incomeTax.toLocaleString()}{" "}
+                RSD
+              </p>
+              <p>
+                🏦 PIO Contribution (24%):{" "}
+                {modelBResult.pioContribution.toLocaleString()} RSD
+              </p>
+              <p>
+                🩺 Health Insurance:{" "}
+                {modelBResult.healthInsurance.toLocaleString()} RSD
+              </p>
+              <p className="font-bold">
+                💵 Total Tax: {modelBResult.totalTax.toLocaleString()} RSD
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
