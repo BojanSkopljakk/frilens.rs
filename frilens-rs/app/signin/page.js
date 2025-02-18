@@ -19,7 +19,14 @@ export default function SignIn() {
     if (result.error) {
       alert(result.error);
     } else {
-      router.push("/dashboard"); // Redirect after login
+      router.push("/dashboard"); // ✅ Redirect after successful login
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    const result = await signIn("google", { callbackUrl: "/dashboard" });
+    if (result?.error) {
+      alert("❌ Google sign-in failed");
     }
   };
 
@@ -30,7 +37,7 @@ export default function SignIn() {
 
         <button
           className="btn btn-primary w-full mt-4"
-          onClick={() => signIn("google")}
+          onClick={handleGoogleSignIn}
         >
           Sign in with Google
         </button>
