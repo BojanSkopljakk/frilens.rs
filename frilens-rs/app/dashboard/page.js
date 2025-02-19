@@ -95,7 +95,7 @@ export default async function Dashboard() {
       </section>
       {/* TAX CALCULATOR */}
       <section className="max-w-5xl mx-auto px-5 py-12 space-y-12">
-        <TaxCalculator payments={user.payments} />
+        <TaxCalculator userId={user._id} payments={user.payments} />
       </section>
     </main>
   );

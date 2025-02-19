@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import PayTaxesButton from "./PayTaxesButton";
 
-export default function TaxCalculator({ payments }) {
+export default function TaxCalculator({ userId, payments }) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [quarter, setQuarter] = useState(1);
   const [exchangeRates, setExchangeRates] = useState(null);
@@ -213,6 +214,13 @@ export default function TaxCalculator({ payments }) {
               <p className="font-bold">
                 💵 Total Tax: {modelAResult.totalTax.toLocaleString()} RSD
               </p>
+              <PayTaxesButton
+                userId={userId}
+                year={year}
+                quarter={quarter}
+                model="A"
+                totalTax={modelAResult.totalTax}
+              />
             </div>
           )}
 
@@ -238,6 +246,13 @@ export default function TaxCalculator({ payments }) {
               <p className="font-bold">
                 💵 Total Tax: {modelBResult.totalTax.toLocaleString()} RSD
               </p>
+              <PayTaxesButton
+                userId={userId}
+                year={year}
+                quarter={quarter}
+                model="B"
+                totalTax={modelAResult.totalTax}
+              />
             </div>
           )}
         </div>
