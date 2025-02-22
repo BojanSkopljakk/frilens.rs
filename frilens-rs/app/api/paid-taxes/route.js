@@ -6,23 +6,37 @@ export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-    const year = parseInt(searchParams.get("year"), 10);
-    const quarter = parseInt(searchParams.get("quarter"), 10);
+    const year = searchParams.get("year")
+      ? parseInt(searchParams.get("year"), 10)
+      : null;
+    const quarter = searchParams.get("quarter")
+      ? parseInt(searchParams.get("quarter"), 10)
+      : null;
 
-    if (!userId || !year || !quarter) {
+    if (!userId) {
       return NextResponse.json(
-        { error: "Missing required parameters." },
+        { error: "Missing required userId parameter." },
         { status: 400 }
       );
     }
 
     await connectMongo();
 
-    const existingRecord = await PaidTaxes.findOne({ userId, year, quarter });
+    const query = { userId };
+    if (year) query.year = year;
+    if (quarter) query.quarter = quarter;
 
-    return NextResponse.json({ paid: !!existingRecord });
+    const paidTaxes = await PaidTaxes.find(query).lean();
+
+    // Convert _id to string for frontend compatibility
+    const formattedData = paidTaxes.map((tax) => ({
+      ...tax,
+      _id: tax._id.toString(),
+    }));
+
+    return NextResponse.json({ paidTaxes: formattedData });
   } catch (error) {
-    console.error("❌ Error checking tax payment status:", error);
+    console.error("❌ Error fetching paid taxes:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
