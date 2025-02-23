@@ -18,6 +18,9 @@ export default function StatsChart({ payments, userId }) {
   const [quarter, setQuarter] = useState(1);
   const [paidTaxes, setPaidTaxes] = useState([]);
   const [exchangeRates, setExchangeRates] = useState(null);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalTaxes, setTotalTaxes] = useState(0);
+  const [netIncome, setNetIncome] = useState(0);
 
   // ✅ Fetch Exchange Rates
   useEffect(() => {
@@ -43,7 +46,7 @@ export default function StatsChart({ payments, userId }) {
         );
         const data = await response.json();
         console.log("📊 Paid Taxes Data:", data);
-        setPaidTaxes(data.paidTaxes);
+        setPaidTaxes(data.paidTaxes || []); // Ensure it's always an array
       } catch (error) {
         console.error("❌ Failed to fetch paid taxes:", error);
       }
@@ -55,64 +58,78 @@ export default function StatsChart({ payments, userId }) {
   }, [userId, year, quarter]);
 
   // ✅ Calculate Total Income in RSD
-  function calculateTotalIncome() {
-    if (!exchangeRates) {
-      console.error("❌ Exchange rates not loaded yet.");
-      return 0;
-    }
-
-    const filteredPayments = payments.filter((payment) => {
-      const paymentDate = new Date(payment.date);
-      const paymentYear = paymentDate.getFullYear();
-      const paymentQuarter = Math.ceil((paymentDate.getMonth() + 1) / 3);
-      return paymentYear === year && paymentQuarter === quarter;
-    });
-
-    let totalRSD = 0;
-
-    // ✅ Get the RSD exchange rate
-    const rsdRate = exchangeRates["RSD"];
-    if (!rsdRate) {
-      console.error("❌ Missing exchange rate for RSD");
-      return 0;
-    }
-
-    filteredPayments.forEach((payment) => {
-      const currencyRate = exchangeRates[payment.currency]; // ✅ Get rate to USD
-
-      if (!currencyRate) {
-        console.warn(`⚠️ No exchange rate found for ${payment.currency}`);
-        return;
+  useEffect(() => {
+    function calculateTotalIncome() {
+      if (!exchangeRates) {
+        console.error("❌ Exchange rates not loaded yet.");
+        return 0;
       }
 
-      // ✅ Convert amount to USD, then to RSD
-      const amountInRSD = (payment.amount / currencyRate) * rsdRate;
+      const filteredPayments = payments.filter((payment) => {
+        const paymentDate = new Date(payment.date);
+        const paymentYear = paymentDate.getFullYear();
+        const paymentQuarter = Math.ceil((paymentDate.getMonth() + 1) / 3);
+        return paymentYear === year && paymentQuarter === quarter;
+      });
 
-      console.log(
-        `💱 Converting ${payment.amount} ${payment.currency} to RSD: ${amountInRSD}`
-      );
+      let totalRSD = 0;
 
-      totalRSD += amountInRSD;
-    });
+      // ✅ Get the RSD exchange rate
+      const rsdRate = exchangeRates["RSD"];
+      if (!rsdRate) {
+        console.error("❌ Missing exchange rate for RSD");
+        return 0;
+      }
 
-    console.log("✅ Total Income in RSD:", totalRSD);
+      filteredPayments.forEach((payment) => {
+        const currencyRate = exchangeRates[payment.currency]; // ✅ Get rate to USD
 
-    return totalRSD;
-  }
+        if (!currencyRate) {
+          console.warn(`⚠️ No exchange rate found for ${payment.currency}`);
+          return;
+        }
 
-  // ✅ Calculate Total Income and Total Taxes
-  const totalIncome = calculateTotalIncome();
-  const totalTaxes = paidTaxes
-    .filter((tax) => tax.year === year && tax.quarter === quarter)
-    .reduce((sum, tax) => sum + tax.totalTax, 0);
+        // ✅ Convert amount to USD, then to RSD
+        const amountInRSD = (payment.amount / currencyRate) * rsdRate;
 
+        console.log(
+          `💱 Converting ${payment.amount} ${payment.currency} to RSD: ${amountInRSD}`
+        );
+
+        totalRSD += amountInRSD;
+      });
+
+      console.log("✅ Total Income in RSD:", totalRSD);
+
+      return totalRSD;
+    }
+
+    const income = calculateTotalIncome();
+    setTotalIncome(income);
+  }, [payments, year, quarter, exchangeRates]);
+
+  // ✅ Calculate Total Taxes
+  useEffect(() => {
+    const taxes = paidTaxes
+      .filter((tax) => tax.year === year && tax.quarter === quarter)
+      .reduce((sum, tax) => sum + tax.totalTax, 0);
+    setTotalTaxes(taxes);
+  }, [paidTaxes, year, quarter]);
+
+  // ✅ Calculate Net Income
+  useEffect(() => {
+    const net = totalIncome - totalTaxes;
+    setNetIncome(net);
+  }, [totalIncome, totalTaxes]);
+
+  // ✅ Chart Data
   const chartData = {
-    labels: ["Income", "Paid Taxes"],
+    labels: ["Income", "Paid Taxes", "Net Income"],
     datasets: [
       {
         label: "RSD",
-        data: [totalIncome, totalTaxes],
-        backgroundColor: ["#4caf50", "#f44336"],
+        data: [totalIncome, totalTaxes, netIncome],
+        backgroundColor: ["#4caf50", "#f44336", "#2196f3"],
       },
     ],
   };
@@ -128,6 +145,11 @@ export default function StatsChart({ payments, userId }) {
           label: (context) =>
             `${context.dataset.label}: ${context.raw.toLocaleString()} RSD`,
         },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
       },
     },
   };
@@ -170,6 +192,10 @@ export default function StatsChart({ payments, userId }) {
       </div>
 
       <Bar data={chartData} options={chartOptions} />
+      <div className="mt-6 text-center">
+        <h3 className="text-xl font-bold text-green-600">💵 Neto Prihod</h3>
+        <p className="text-2xl">{netIncome.toLocaleString()} RSD</p>
+      </div>
     </div>
   );
 }
