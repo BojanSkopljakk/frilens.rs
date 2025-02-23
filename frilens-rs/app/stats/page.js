@@ -4,6 +4,7 @@ import User from "@/models/User";
 import StatsChart from "@/components/StatsChart";
 import Payment from "@/models/Payment";
 import PaidTaxes from "@/models/PaidTaxes";
+import YearlyIncomeVsTaxesChart from "@/components/YearlyIncomeVsTaxesChart";
 
 async function getUser() {
   const session = await auth();
@@ -61,6 +62,7 @@ export default async function Stats() {
           📊 Income vs. Taxes Dashboard
         </h2>
         <StatsChart payments={user.payments} userId={user._id} />
+        <YearlyIncomeVsTaxesChart userId={user._id} />
       </section>
     </main>
   );
