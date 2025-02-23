@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import connectMongo from "@/libs/mongoose";
 import PaidTaxes from "@/models/PaidTaxes";
+import User from "@/models/User";
+import mongoose from "mongoose";
 
 export async function GET(req) {
   try {
@@ -70,6 +72,10 @@ export async function POST(req) {
       quarter,
       model,
       totalTax,
+    });
+
+    await User.findByIdAndUpdate(new mongoose.Types.ObjectId(userId), {
+      $push: { paidTaxes: newTaxPayment._id },
     });
 
     return NextResponse.json(

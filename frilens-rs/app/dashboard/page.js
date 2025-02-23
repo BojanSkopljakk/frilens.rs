@@ -6,6 +6,7 @@ import connectMongo from "@/libs/mongoose";
 import User from "@/models/User";
 import Payment from "@/models/Payment";
 import TaxCalculator from "@/components/TaxCalculator";
+import PaidTaxes from "@/models/PaidTaxes";
 
 async function getUser() {
   const session = await auth();
@@ -19,6 +20,7 @@ async function getUser() {
 
   const user = await User.findOne({ email: session.user.email })
     .populate("payments")
+    .populate("paidTaxes")
     .lean(); // ✅ Converts MongoDB documents to plain objects
 
   if (!user) {
@@ -27,13 +29,25 @@ async function getUser() {
   }
 
   // ✅ Convert `_id` fields to strings
+
   user._id = user._id.toString();
-  user.payments = user.payments.map((payment) => ({
+  user.payments = (user.payments || []).map((payment) => ({
     ...payment,
     _id: payment._id.toString(), // ✅ Convert `ObjectId` to string
-    userId: payment.userId.toString(), // ✅ Convert `userId` to string
-    date: payment.date.toISOString(), // ✅ Convert Date to a string
-    createdAt: payment.createdAt.toISOString(), // ✅ Convert Date to a string
+    userId: payment.userId?.toString() || "", // ✅ Handle case where userId is undefined
+    date: payment.date ? payment.date.toISOString() : "", // ✅ Safe Date Conversion
+    createdAt: payment.createdAt ? payment.createdAt.toISOString() : "", // ✅ Safe Date Conversion
+  }));
+
+  user.paidTaxes = (user.paidTaxes || []).map((tax) => ({
+    ...tax,
+    _id: tax._id.toString(),
+    userId: tax.userId?.toString() || "",
+    year: tax.year,
+    quarter: tax.quarter,
+    model: tax.model,
+    totalTax: tax.totalTax,
+    createdAt: tax.createdAt ? tax.createdAt.toISOString() : "",
   }));
 
   return user;
