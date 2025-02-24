@@ -7,6 +7,7 @@ import User from "@/models/User";
 import Payment from "@/models/Payment";
 import TaxCalculator from "@/components/TaxCalculator";
 import PaidTaxes from "@/models/PaidTaxes";
+import ButtonCheckout from "@/components/ButtonCheckout";
 
 async function getUser() {
   const session = await auth();
@@ -61,8 +62,9 @@ export default async function Dashboard() {
     <main className="bg-base-200 min-h-screen">
       {/*HEADER*/}
       <section className="bg-base-100">
-        <div className="px-5 py-3 flex justify-end max-w-5xl mx-auto">
+        <div className="px-5 py-3 flex justify-between max-w-5xl mx-auto">
           <ButtonLogout />
+          <ButtonCheckout></ButtonCheckout>
         </div>
       </section>
 

@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.7.4",
+    "@lemonsqueezy/lemonsqueezy.js": "^4.0.0",
     "axios": "^1.7.9",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.8",
+    "lemonsqueezy": "^0.0.1-claimed",
     "mongodb": "^6.13.0",
     "mongoose": "^8.10.0",
     "next": "15.1.6",
