@@ -24,7 +24,7 @@ const DeletePaymentButton = ({ paymentId }) => {
       className="btn btn-sm btn-error"
       disabled={isDeleting}
     >
-      {isDeleting ? "Deleting..." : "🗑️ Delete"}
+      {isDeleting ? "Brisanje..." : "🗑️ Obriši"}
     </button>
   );
 };

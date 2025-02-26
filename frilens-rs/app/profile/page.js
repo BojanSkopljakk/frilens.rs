@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import ButtonLogout from "@/components/ButtonLogout";
+import ButtonCheckout from "@/components/ButtonCheckout";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -42,7 +44,7 @@ export default function Profile() {
     setMessage("");
 
     if (newPassword && newPassword !== confirmNewPassword) {
-      setMessage("❌ New passwords do not match.");
+      setMessage("❌ Šifre nisu iste");
       setIsLoading(false);
       return;
     }
@@ -54,7 +56,7 @@ export default function Profile() {
         newPassword: newPassword || undefined,
       });
 
-      setMessage("✅ Profile updated successfully!");
+      setMessage("✅ Profil uspešno ažuriran");
       setOldPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
@@ -66,7 +68,7 @@ export default function Profile() {
   }
 
   if (isLoading) {
-    return <p className="text-center">🔄 Loading profile...</p>;
+    return <p className="text-center">🔄 Profil se učitava</p>;
   }
 
   if (!user) {
@@ -78,84 +80,112 @@ export default function Profile() {
   }
 
   return (
-    <main className="max-w-md mx-auto p-6 bg-base-100 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">👤 Profile</h2>
+    <main>
+      {/* HEADER */}
+      <section className="bg-base-100 shadow-md">
+        <div className="px-5 py-4 flex justify-between items-center max-w-5xl mx-auto">
+          <a
+            href="/"
+            className="text-xl font-bold text-primary hover:text-primary-focus transition"
+          >
+            Frilens.rs
+          </a>
 
-      {/* Removed the profile image */}
-      <div className="mb-4">
-        <p className="font-bold">{user.email}</p>
-      </div>
+          <div className="space-x-4 flex items-center">
+            <a className="link link-hover" href="/dashboard">
+              Prihodi
+            </a>
 
-      <form className="space-y-4" onSubmit={handleUpdateProfile}>
-        <div>
-          <label className="label">
-            <span className="label-text">Name:</span>
-          </label>
-          <input
-            type="text"
-            className="input input-bordered w-full"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+            {user.hasAccess && (
+              <a className="link link-hover" href="/stats">
+                Statistika
+              </a>
+            )}
+
+            <ButtonLogout extraStyle="btn-outline btn-sm" />
+          </div>
+        </div>
+      </section>
+
+      {/* PROFILE CONTENT */}
+      <section className="max-w-md mx-auto p-6 bg-base-100 rounded-lg shadow-lg mt-8">
+        <h2 className="text-2xl font-bold mb-4">👤 Profil</h2>
+
+        <div className="mb-4">
+          <p className="font-bold">{user.email}</p>
         </div>
 
-        {!isGoogleUser && (
-          <>
-            <div>
-              <label className="label">
-                <span className="label-text">Old Password:</span>
-              </label>
-              <input
-                type="password"
-                className="input input-bordered w-full"
-                placeholder="Enter old password"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-              />
-            </div>
+        <form className="space-y-4" onSubmit={handleUpdateProfile}>
+          <div>
+            <label className="label">
+              <span className="label-text">Ime:</span>
+            </label>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
 
-            <div>
-              <label className="label">
-                <span className="label-text">New Password:</span>
-              </label>
-              <input
-                type="password"
-                className="input input-bordered w-full"
-                placeholder="Enter new password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
+          {!isGoogleUser && (
+            <>
+              <div>
+                <label className="label">
+                  <span className="label-text">Stara šifra:</span>
+                </label>
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="Unesi staru šifru"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                />
+              </div>
 
-            <div>
-              <label className="label">
-                <span className="label-text">Confirm New Password:</span>
-              </label>
-              <input
-                type="password"
-                className="input input-bordered w-full"
-                placeholder="Confirm new password"
-                value={confirmNewPassword}
-                onChange={(e) => setConfirmNewPassword(e.target.value)}
-              />
-            </div>
-          </>
-        )}
+              <div>
+                <label className="label">
+                  <span className="label-text">Nova šifra:</span>
+                </label>
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="Unesi novu šifru"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+              </div>
 
-        <button
-          className="btn btn-primary w-full"
-          type="submit"
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <span className="loading loading-spinner"></span>
-          ) : (
-            "Update Profile"
+              <div>
+                <label className="label">
+                  <span className="label-text">Potvrdi novu šifru:</span>
+                </label>
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="Potvrdi novu šifru"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                />
+              </div>
+            </>
           )}
-        </button>
-      </form>
 
-      {message && <p className="mt-2 text-green-600">{message}</p>}
+          <button
+            className="btn btn-primary w-full"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <span className="loading loading-spinner"></span>
+            ) : (
+              "Ažuriraj profil"
+            )}
+          </button>
+        </form>
+
+        {message && <p className="mt-2 text-green-600">{message}</p>}
+      </section>
     </main>
   );
 }

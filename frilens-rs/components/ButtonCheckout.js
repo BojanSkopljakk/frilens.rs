@@ -35,7 +35,7 @@ const ButtonCheckout = () => {
       {isLoading && (
         <span className="loading loading-spinner loading-xs"></span>
       )}
-      Subscribe
+      Napredna Statistika
     </button>
   );
 };

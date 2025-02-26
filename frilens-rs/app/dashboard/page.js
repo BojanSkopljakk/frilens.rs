@@ -22,23 +22,34 @@ async function getUser() {
   const user = await User.findOne({ email: session.user.email })
     .populate("payments")
     .populate("paidTaxes")
-    .lean(); // ✅ Converts MongoDB documents to plain objects
+    .lean();
 
   if (!user) {
     console.log("User not found in the database.");
     return null;
   }
 
-  // ✅ Convert `_id` fields to strings
-
+  // Convert `_id` fields to strings
   user._id = user._id.toString();
-  user.payments = (user.payments || []).map((payment) => ({
-    ...payment,
-    _id: payment._id.toString(), // ✅ Convert `ObjectId` to string
-    userId: payment.userId?.toString() || "", // ✅ Handle case where userId is undefined
-    date: payment.date ? payment.date.toISOString() : "", // ✅ Safe Date Conversion
-    createdAt: payment.createdAt ? payment.createdAt.toISOString() : "", // ✅ Safe Date Conversion
-  }));
+  user.payments = (user.payments || []).map((payment) => {
+    const paymentDate = new Date(payment.date);
+    const paymentYear = paymentDate.getFullYear();
+    const paymentQuarter = Math.ceil((paymentDate.getMonth() + 1) / 3);
+
+    // Check if taxes are paid for this quarter
+    const isTaxPaid = user.paidTaxes.some(
+      (tax) => tax.year === paymentYear && tax.quarter === paymentQuarter
+    );
+
+    return {
+      ...payment,
+      _id: payment._id.toString(),
+      userId: payment.userId?.toString() || "",
+      date: payment.date ? payment.date.toISOString() : "",
+      createdAt: payment.createdAt ? payment.createdAt.toISOString() : "",
+      isTaxPaid,
+    };
+  });
 
   user.paidTaxes = (user.paidTaxes || []).map((tax) => ({
     ...tax,
@@ -61,10 +72,38 @@ export default async function Dashboard() {
   return (
     <main className="bg-base-200 min-h-screen">
       {/*HEADER*/}
-      <section className="bg-base-100">
-        <div className="px-5 py-3 flex justify-between max-w-5xl mx-auto">
-          <ButtonLogout />
-          {!user.hasAccess && <ButtonCheckout />}
+      <section className="bg-base-100 shadow-md">
+        <div className="px-5 py-4 flex justify-between items-center max-w-5xl mx-auto">
+          <a
+            href="/"
+            className="text-xl font-bold text-primary hover:text-primary-focus transition"
+          >
+            Frilens.rs
+          </a>
+
+          <div className="space-x-4 flex items-center">
+            <a
+              className="link link-hover text-sm font-medium text-gray-600 hover:text-primary transition"
+              href="/profile"
+            >
+              Profil
+            </a>
+
+            {user.hasAccess && (
+              <a
+                className="link link-hover text-sm font-medium text-gray-600 hover:text-primary transition"
+                href="/stats"
+              >
+                Statistika
+              </a>
+            )}
+
+            {!user.hasAccess && (
+              <ButtonCheckout extraStyle="btn-primary btn-sm" />
+            )}
+
+            <ButtonLogout extraStyle="btn-outline btn-sm" />
+          </div>
         </div>
       </section>
 
@@ -99,8 +138,16 @@ export default async function Dashboard() {
                     <td className="p-3">{payment.amount}</td>
                     <td className="p-3">{payment.currency}</td>
                     <td className="p-3">
-                      <DeletePaymentButton paymentId={payment._id} />{" "}
-                      {/* ✅ Use the new client component */}
+                      {payment.isTaxPaid ? (
+                        <button
+                          className="btn btn-disabled cursor-not-allowed opacity-50"
+                          title="Ne može se obrisati. Porez je plaćen za ovaj kvartal."
+                        >
+                          🔒 Ne može se obrisati
+                        </button>
+                      ) : (
+                        <DeletePaymentButton paymentId={payment._id} />
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -48,7 +48,7 @@ export default function PayTaxesButton({
       });
 
       setHasPaid(true);
-      alert("✅ Taxes successfully paid!");
+      alert("✅ Porez uspešno plaćen");
       router.refresh();
     } catch (error) {
       setErrorMessage(
@@ -72,9 +72,9 @@ export default function PayTaxesButton({
         {isLoading ? (
           <span className="loading loading-spinner"></span>
         ) : hasPaid ? (
-          "✅ Already Paid"
+          "✅ Porez već plaćen"
         ) : (
-          "💵 Pay Taxes"
+          "💵 Plati porez"
         )}
       </button>
       {errorMessage && <p className="mt-2 text-red-500">{errorMessage}</p>}

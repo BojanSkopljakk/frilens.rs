@@ -140,10 +140,10 @@ export default function TaxCalculator({ userId, payments }) {
 
   return (
     <div className="bg-base-100 p-6 rounded-lg shadow-lg space-y-4">
-      <h2 className="font-bold text-lg">📊 Calculate Taxes</h2>
+      <h2 className="font-bold text-lg">📊 Izračunaj porez</h2>
 
       <label className="form-control w-full">
-        <span className="label-text">Select Year:</span>
+        <span className="label-text">Godina:</span>
         <select
           className="select select-bordered w-full"
           value={year}
@@ -158,7 +158,7 @@ export default function TaxCalculator({ userId, payments }) {
       </label>
 
       <label className="form-control w-full">
-        <span className="label-text">Select Quarter:</span>
+        <span className="label-text">Kvartal:</span>
         <select
           className="select select-bordered w-full"
           value={quarter}
@@ -179,40 +179,40 @@ export default function TaxCalculator({ userId, payments }) {
           checked={hasHealthInsurance}
           onChange={() => setHasHealthInsurance(!hasHealthInsurance)}
         />
-        <span className="label-text">I already have health insurance</span>
+        <span className="label-text">Zdravstveno sam osiguran</span>
       </label>
 
       <button className="btn btn-primary w-full" onClick={calculateTaxes}>
-        Calculate Taxes
+        Izračunaj porez
       </button>
 
       {totalIncomeRSD > 0 && (
         <div className="mt-4">
           <p className="text-lg font-bold">
-            💰 Total Income (RSD): {totalIncomeRSD.toLocaleString()}
+            💰 Prihodi (RSD): {totalIncomeRSD.toLocaleString()}
           </p>
 
           {modelAResult && (
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
               <h3 className="font-bold text-md">📌 Model A</h3>
               <p>
-                💸 Taxable Income: {modelAResult.taxableIncome.toLocaleString()}{" "}
+                💸 Oporeziv prihod:{" "}
+                {modelAResult.taxableIncome.toLocaleString()} RSD
+              </p>
+              <p>
+                🧾 Porez na dohodak (20%):{" "}
+                {modelAResult.incomeTax.toLocaleString()} RSD
+              </p>
+              <p>
+                🏦 PIO (24%): {modelAResult.pioContribution.toLocaleString()}{" "}
                 RSD
               </p>
               <p>
-                🧾 Income Tax (20%): {modelAResult.incomeTax.toLocaleString()}{" "}
-                RSD
-              </p>
-              <p>
-                🏦 PIO Contribution (24%):{" "}
-                {modelAResult.pioContribution.toLocaleString()} RSD
-              </p>
-              <p>
-                🩺 Health Insurance:{" "}
+                🩺 Zdravstveno osiguranje:{" "}
                 {modelAResult.healthInsurance.toLocaleString()} RSD
               </p>
               <p className="font-bold">
-                💵 Total Tax: {modelAResult.totalTax.toLocaleString()} RSD
+                💵 Ukupan porez: {modelAResult.totalTax.toLocaleString()} RSD
               </p>
               <PayTaxesButton
                 userId={userId}
@@ -228,23 +228,23 @@ export default function TaxCalculator({ userId, payments }) {
             <div className="mt-4 p-4 bg-gray-100 rounded-lg">
               <h3 className="font-bold text-md">📌 Model B</h3>
               <p>
-                💸 Taxable Income: {modelBResult.taxableIncome.toLocaleString()}{" "}
+                💸 Oporeziv prihod:{" "}
+                {modelBResult.taxableIncome.toLocaleString()} RSD
+              </p>
+              <p>
+                🧾 Porez na dohodak (10%):{" "}
+                {modelBResult.incomeTax.toLocaleString()} RSD
+              </p>
+              <p>
+                🏦 PIO (24%): {modelBResult.pioContribution.toLocaleString()}{" "}
                 RSD
               </p>
               <p>
-                🧾 Income Tax (10%): {modelBResult.incomeTax.toLocaleString()}{" "}
+                🩺 Zdravstveno: {modelBResult.healthInsurance.toLocaleString()}{" "}
                 RSD
-              </p>
-              <p>
-                🏦 PIO Contribution (24%):{" "}
-                {modelBResult.pioContribution.toLocaleString()} RSD
-              </p>
-              <p>
-                🩺 Health Insurance:{" "}
-                {modelBResult.healthInsurance.toLocaleString()} RSD
               </p>
               <p className="font-bold">
-                💵 Total Tax: {modelBResult.totalTax.toLocaleString()} RSD
+                💵 Ukupan porez: {modelBResult.totalTax.toLocaleString()} RSD
               </p>
               <PayTaxesButton
                 userId={userId}
