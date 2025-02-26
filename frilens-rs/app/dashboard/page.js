@@ -64,7 +64,7 @@ export default async function Dashboard() {
       <section className="bg-base-100">
         <div className="px-5 py-3 flex justify-between max-w-5xl mx-auto">
           <ButtonLogout />
-          <ButtonCheckout></ButtonCheckout>
+          {!user.hasAccess && <ButtonCheckout />}
         </div>
       </section>
 

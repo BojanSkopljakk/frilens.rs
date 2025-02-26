@@ -55,6 +55,10 @@ export default async function Stats() {
   const user = await getUser();
   console.log("Fetched User for Stats:", user);
 
+  if (!user || !user.hasAccess) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="bg-base-200 min-h-screen">
       <section className="max-w-5xl mx-auto px-5 py-12 space-y-12">
