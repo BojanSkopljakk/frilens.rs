@@ -83,10 +83,10 @@ Visit http://localhost:3000 to see the app in action.
 └── package.json              # Dependencies and Scripts
 ```
 ### **🔮 Future Improvements**
-✅ Implement detailed unit and integration tests
-✅ Improve UI/UX design for better user experience
-✅ Add multi-language support for non-Serbian users
-✅ Improve the conversion rate logic
+- ✅ Implement detailed unit and integration tests
+- ✅ Improve UI/UX design for better user experience
+- ✅ Add multi-language support for non-Serbian users
+- ✅ Improve the conversion rate logic
 
 
 
