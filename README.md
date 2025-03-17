@@ -41,7 +41,7 @@ Frilens.rs is a Next.js web application designed to help freelancers in Serbia m
 
 ### **1. Clone the Repository**
 ```bash
-git clone https://github.com/your-username/frilens-rs.git
+git clone https://github.com/BojanSkopljakk/frilens-rs.git
 cd frilens-rs
 
 ```
