@@ -21,7 +21,7 @@ const ButtonLogin = ({ session, extraStyle }) => {
           signIn(undefined, { callbackUrl: dashboardUrl });
         }}
       >
-        Get started
+        Počnite!
       </button>
     );
   }
