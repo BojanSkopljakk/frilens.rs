@@ -2,6 +2,8 @@
 
 Frilens.rs is a Next.js web application designed to help freelancers in Serbia manage their income and tax obligations. The platform allows users to record their earnings, calculate taxes, and optimize their tax payments. Premium features, such as advanced analytics, are available through a subscription model powered by LemonSqueezy.
 
+Test the app: https://frilens-rs.vercel.app/
+
 ---
 
 ## 🚀 Features
@@ -75,7 +77,7 @@ Visit http://localhost:3000 to see the app in action.
 │   ├── components/           # Reusable React Components (Buttons, Charts)
 │   ├── libs/                 # Utility Libraries (e.g., Mongoose connection)
 │   ├── models/               # Mongoose Schemas (User, Payments, Taxes)
-│   └── styles/               # Tailwind CSS Configurations
+│  
 │
 ├── public/                   # Static Files (images, etc.)
 ├── .env.local                # Environment Variables (Not included in repo)
@@ -84,6 +86,7 @@ Visit http://localhost:3000 to see the app in action.
 ```
 ### **🔮 Future Improvements**
 - ✅ Implement detailed unit and integration tests
+- ✅ Add email verification for newly registered users
 - ✅ Improve UI/UX design for better user experience
 - ✅ Add multi-language support for non-Serbian users
 - ✅ Improve the conversion rate logic
